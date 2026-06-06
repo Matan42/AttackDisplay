@@ -1,0 +1,724 @@
+/*
+ Scoped CSS variable overrides
+ Forces red/black theme inside this component regardless of global theme
+ */
+.browser-grid {
+  --accent-cyan:    #dc1f2e;
+  --accent-purple:  #c0392b;
+  --accent-orange:  #c0392b;
+  --bg-card:        #13131a;
+  --bg-secondary:   #111115;
+  --border-color:   rgba(180, 20, 30, 0.18);
+  --accent-red:     #dc1f2e;
+  --accent-red-dim: #8b1520;
+  --accent-crimson: #ff2d3d;
+  --accent-blood:   #6e0d14;
+  --text-primary:   #f0e8e8;
+  --text-secondary: #b09898;
+  --text-muted:     #6b4f52;
+  --glow-red:       0 0 12px rgba(220, 31, 46, 0.35);
+  --glow-red-soft:  0 0 6px rgba(220, 31, 46, 0.18);
+}
+
+/* Override global glass-panel inside this component */
+.browser-grid .glass-panel {
+  background: #13131a;
+  border: 1px solid rgba(180, 20, 30, 0.18);
+  border-radius: 4px;
+  box-shadow:
+    inset 3px 0 0 #8b1520,
+    0 4px 24px rgba(0, 0, 0, 0.6),
+    0 0 6px rgba(220, 31, 46, 0.18);
+}
+
+/* Override global cyber-input inside this component */
+.browser-grid .cyber-input {
+  font-size: 11px;
+  height: 36px;
+  background: #111115;
+  border: 1px solid rgba(180, 20, 30, 0.18);
+  color: #f0e8e8;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.browser-grid .cyber-input:focus {
+  border-color: #dc1f2e;
+  box-shadow: 0 0 12px rgba(220, 31, 46, 0.35);
+}
+
+.browser-grid .cyber-input::placeholder {
+  color: #6b4f52;
+}
+
+/* Override global cyber-btn inside this component */
+.browser-grid .cyber-btn {
+  height: 36px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.browser-grid .cyber-btn-cyan {
+  background-color: rgba(220, 31, 46, 0.12);
+  border: 1px solid #dc1f2e;
+  color: #ff2d3d;
+}
+
+.browser-grid .cyber-btn-cyan:hover {
+  background-color: rgba(220, 31, 46, 0.22);
+  box-shadow: 0 0 12px rgba(220, 31, 46, 0.35);
+}
+
+/*
+Page layout
+ */
+.browser-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 32px;
+  align-items: start;
+  background: #0a0a0b;
+  min-height: 100vh;
+  padding: 24px;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(180, 20, 30, 0.015) 2px,
+      rgba(180, 20, 30, 0.015) 4px
+    );
+}
+
+.browser-left-col {
+  grid-column: span 5;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.browser-right-col {
+  grid-column: span 7;
+}
+
+@media (max-width: 1024px) {
+  .browser-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .browser-left-col,
+  .browser-right-col {
+    grid-column: span 12;
+  }
+}
+
+/*
+ Search and filter panel
+ */
+.search-filter-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Search bar row*/
+.search-filter-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent-red-dim);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.search-input-wrapper:focus-within .search-icon {
+  color: var(--accent-crimson);
+}
+
+.search-input-wrapper input {
+  width: 100%;
+  padding-left: 40px;
+}
+
+.search-input-wrapper input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input-wrapper input:focus {
+  border-color: var(--accent-red);
+  box-shadow: var(--glow-red);
+}
+
+/*Section label above chips*/
+.filter-section-title {
+  display: block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/*Chip group*/
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-chip {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
+}
+
+.filter-chip:hover {
+  border-color: var(--accent-red-dim);
+  color: var(--text-primary);
+  background: rgba(180, 20, 30, 0.08);
+}
+
+.filter-chip.active-cyan {
+  background-color: rgba(220, 31, 46, 0.12);
+  border-color: var(--accent-red);
+  color: var(--accent-crimson);
+  box-shadow: var(--glow-red-soft);
+}
+
+.filter-chip.active-purple {
+  background-color: rgba(139, 21, 32, 0.15);
+  border-color: var(--accent-red-dim);
+  color: #e87070;
+}
+
+/* --- Clear filters link-button --- */
+.clear-filters-btn {
+  align-self: flex-end;
+  background: transparent;
+  border: none;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent-red);
+  cursor: pointer;
+}
+
+.clear-filters-btn:hover {
+  text-decoration: underline;
+}
+
+/* 
+ Attack list
+ Scrollable list of attack cards inside the list panel
+*/
+.list-panel {
+  padding: 16px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.attacks-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+/*Single attack row*/
+.attack-item {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(180, 20, 30, 0.12);
+  background-color: rgba(10, 10, 11, 0.6);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Left edge bar — hidden by default */
+.attack-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent-red);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.attack-item:hover {
+  border-color: rgba(180, 20, 30, 0.4);
+  background-color: rgba(180, 20, 30, 0.05);
+}
+
+.attack-item:hover::before {
+  opacity: 0.5;
+}
+
+.attack-item.active {
+  background-color: rgba(220, 31, 46, 0.06);
+  border-color: rgba(220, 31, 46, 0.45);
+  box-shadow: var(--glow-red-soft);
+}
+
+.attack-item.active::before {
+  opacity: 1;
+}
+
+.attack-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  padding-left: 12px;
+}
+
+.attack-item-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attack-item-id {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.attack-item-badge {
+  flex-shrink: 0;
+}
+
+/*
+ pagmination container
+*/
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid rgba(180, 20, 30, 0.15);
+  padding-top: 16px;
+  margin-top: 8px;
+}
+
+.pagination-btn {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--accent-red);
+  color: var(--accent-crimson);
+  background-color: rgba(220, 31, 46, 0.08);
+  box-shadow: var(--glow-red-soft);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* 
+ Details panel
+ Right-column card: header, description, detection boxes
+ */
+.details-panel {
+  padding: 24px;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+/*Header: title + technique ID + platform/phase badges*/
+.details-header {
+  border-bottom: 1px solid rgba(180, 20, 30, 0.2);
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+/* Glowing underline accent on header */
+.details-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 60px;
+  height: 1px;
+  background: var(--accent-red);
+  box-shadow: var(--glow-red);
+}
+
+.details-header-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.details-header-title-row h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.details-header-id {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--accent-crimson);
+  background-color: rgba(220, 31, 46, 0.07);
+  padding: 4px 10px;
+  border: 1px solid rgba(220, 31, 46, 0.3);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  box-shadow: var(--glow-red-soft);
+}
+
+.details-header-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/*Labelled content sections*/
+.details-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.details-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/*Description scrollable box*/
+.details-description-box {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  background-color: rgba(10, 10, 11, 0.5);
+  border: 1px solid rgba(180, 20, 30, 0.15);
+  padding: 16px;
+  border-radius: 8px;
+  max-height: 250px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-red-dim) transparent;
+}
+
+.details-description-box::-webkit-scrollbar { width: 4px; }
+.details-description-box::-webkit-scrollbar-track { background: transparent; }
+.details-description-box::-webkit-scrollbar-thumb { background: var(--accent-red-dim); border-radius: 2px; }
+
+/*Detection methods scrollable box (ember tint)*/
+.details-detection-box {
+  font-size: 12px;
+  color: #e8a87c;
+  line-height: 1.6;
+  background-color: rgba(40, 15, 5, 0.3);
+  border: 1px solid rgba(180, 80, 20, 0.25);
+  padding: 16px;
+  border-radius: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 80, 20, 0.4) transparent;
+}
+
+.details-detection-box::-webkit-scrollbar { width: 4px; }
+.details-detection-box::-webkit-scrollbar-thumb { background: rgba(180, 80, 20, 0.4); border-radius: 2px; }
+
+/*
+ Realationships section
+ Sub-technique grid and parent technique card at the bottom
+*/
+.relationships-header {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/*2 column grid of sub-technique pills*/
+.relations-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-red-dim) transparent;
+}
+
+.relations-grid::-webkit-scrollbar { width: 4px; }
+.relations-grid::-webkit-scrollbar-thumb { background: var(--accent-red-dim); border-radius: 2px; }
+
+@media (max-width: 640px) {
+  .relations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.subtech-relation-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: rgba(10, 10, 11, 0.6);
+  border: 1px solid rgba(180, 20, 30, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+
+.subtech-relation-item:hover {
+  border-color: rgba(220, 31, 46, 0.5);
+  background-color: rgba(180, 20, 30, 0.07);
+  box-shadow: var(--glow-red-soft);
+}
+
+.subtech-relation-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-left: 8px;
+}
+
+.subtech-relation-id {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  color: #e87070;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/*Single parent technique card*/
+.parent-relation-item {
+  padding: 12px;
+  border-radius: 6px;
+  background-color: rgba(10, 10, 11, 0.6);
+  border: 1px solid rgba(180, 20, 30, 0.2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Gradient left edge bar */
+.parent-relation-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--accent-red), var(--accent-blood));
+}
+
+.parent-relation-item:hover {
+  border-color: rgba(220, 31, 46, 0.5);
+  background-color: rgba(180, 20, 30, 0.07);
+  box-shadow: var(--glow-red-soft);
+}
+
+.parent-relation-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-left: 8px;
+}
+
+.parent-relation-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.parent-relation-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent-red);
+}
+
+.parent-relation-id {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-red);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/*
+ Shared styles for list states:
+ Spinner and empty state used in both columns
+ */
+.list-spinner-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.list-empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+}
+
+.list-empty-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+
+.list-empty-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/*
+ Helper classes referenced from JSX
+ Replaces all removed inline styles
+ */
+
+/* Tactics chip list — scrollable */
+.tactics-chips-container {
+  max-height: 96px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-red-dim) transparent;
+}
+
+/* Small badge size */
+.badge-sm {
+  font-size: 8px;
+}
+
+/* Platform badge variant */
+.badge-platform {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+}
+
+/* Spinner icon color */
+.list-spinner-icon {
+  color: var(--accent-red);
+}
+
+/* Empty state icon color */
+.list-empty-icon {
+  color: var(--accent-red-dim);
+  margin-bottom: 8px;
+}
+
+/* Larger empty-state title in detail panel */
+.list-empty-title-lg {
+  font-size: 13px;
+}
+
+/* Details body flex wrapper */
+.details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex-grow: 1;
+}
+
+/* Relationships bottom section */
+.relationships-section {
+  border-top: 1px solid var(--border-color);
+  padding-top: 16px;
+  margin-top: auto;
+}
+
+/* Share icon inside relationships header */
+.relationships-header-icon {
+  color: var(--accent-red);
+}
+
+/* Italic empty-state text for relations */
+.relations-empty-text {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}

@@ -72,6 +72,27 @@ function initDB() {
       if (err) console.error('Failed to create sandbox_reports table:', err.message);
       else console.log('"sandbox_reports" table verified/created.');
     });
+
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_nameON attacks(name)`, (err) => {
+      if (err) console.error('Failed to create index on attacks(name):', err.message);
+    });
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_idON attacks(id)`, (err) => {
+      if (err) console.error('Failed to create index on attacks(id):', err.message);
+    });
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_subtechON attacks(is_subtechnique)`, (err) => {
+      if (err) console.error('Failed to create index on attacks(is_subtechnique):', err.message);
+    });
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_relationship_sourceON relationships(source_ref)`, (err) => {
+      if (err) console.error('Failed to create index on relationships(source_ref):', err.message);
+    });
+
+    db.run(`CREATE INDEX IF NOT EXISTS idx_relationship_targetON relationships(target_ref)`, (err) => {
+      if (err) console.error('Failed to create index on relationships(target_ref):', err.message);
+    }); 
     // Close the DB connection after all table creation callbacks have run
     db.close((err) => {
       if (err) {
