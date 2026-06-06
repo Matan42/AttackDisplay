@@ -56,31 +56,11 @@ app.post('/api/mitre/sync', async (req, res) => {
 
 // GET /api/mitre/stats
 // Returns database statistics
-app.get('/api/mitre/stats', async (req, res) => {
-  try {
-    const stats = await getMitreStats();
-    res.json(stats);
-  } catch (error) {
-    console.error('Stats error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to load MITRE statistics',
-      error: error.message
-    });
-  }
-});
-
-// MITRE SEARCH ENDPOINTS
-
-// GET /api/mitre/search
-// Query parameters:
-// q - search term
-// page - page number
-// limit - results per page
-// Example:
-// /api/mitre/search?q=DLL&page=1&limit=50
 app.get('/api/mitre/search', async (req, res) => {
-  const query = req.query.q || '';
+  const query = String(req.query.q || '');
+  const platform = String(req.query.platform || '');
+  const tactic = String(req.query.tactic || '');
+
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 50;
 
@@ -92,14 +72,23 @@ app.get('/api/mitre/search', async (req, res) => {
   }
 
   try {
-    const result = await searchAttacks(query, page, limit);
+    const result = await searchAttacks(
+      query,
+      platform,
+      tactic,
+      page,
+      limit
+    );
+
     res.json(result);
+
   } catch (error) {
-    console.error('Search error:', error);
+
+    console.error(error);
+
     res.status(500).json({
       success: false,
-      message: 'Failed searching MITRE attacks',
-      error: error.message
+      message: error.message
     });
   }
 });

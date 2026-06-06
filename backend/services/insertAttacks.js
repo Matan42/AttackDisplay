@@ -163,18 +163,37 @@ export async function downloadAndSyncMitreData() {
 /**
  * Searches the database for attacks by keyword, ID, tactic phase or platform
  */
-export async function searchAttacks(queryStr = '', page = 1, limit = 50) {
+export async function searchAttacks(queryStr = '', platform = '', tactic = '', page = 1, limit = 50) {
   const db = getDatabaseConnection();
   const offset = (page - 1) * limit;
-  
+
+  const normalizedQuery = typeof queryStr === 'string' ? queryStr.trim() : String(queryStr || '').trim();
+  const normalizedPlatform = typeof platform === 'string' ? platform.trim() : String(platform || '').trim();
+  const normalizedTactic = typeof tactic === 'string' ? tactic.trim() : String(tactic || '').trim();
+
   try {
     let sql = 'SELECT * FROM attacks';
     const params = [];
+    const conditions = [];
 
-    if (queryStr && queryStr.trim() !== '') {
-      const searchWildcard = `%${queryStr.trim()}%`;
-      sql += ' WHERE name LIKE ? OR description LIKE ? OR id LIKE ? OR platforms LIKE ? OR phase_name LIKE ?';
+    if (normalizedQuery !== '') {
+      const searchWildcard = `%${normalizedQuery}%`;
+      conditions.push('(name LIKE ? OR description LIKE ? OR id LIKE ? OR platforms LIKE ? OR phase_name LIKE ?)');
       params.push(searchWildcard, searchWildcard, searchWildcard, searchWildcard, searchWildcard);
+    }
+
+    if (normalizedPlatform !== '') {
+      conditions.push('platforms LIKE ?');
+      params.push(`%${normalizedPlatform}%`);
+    }
+
+    if (normalizedTactic !== '') {
+      conditions.push('phase_name LIKE ?');
+      params.push(`%${normalizedTactic}%`);
+    }
+
+    if (conditions.length > 0) {
+      sql += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     // Get count for pagination

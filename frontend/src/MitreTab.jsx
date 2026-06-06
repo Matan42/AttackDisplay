@@ -20,13 +20,14 @@ export default function MitreTab() {
   const loadAttacks = useCallback(async () => {
     setLoading(true);
     try {
-      let q = searchQuery;
-      if (activePlatform) q += ` ${activePlatform}`;
-      if (activeTactic) q += ` ${activeTactic}`;
+      const url = new URL(`${API_BASE}/mitre/search`);
+      if (searchQuery) url.searchParams.set('q', searchQuery);
+      url.searchParams.set('page', page);
+      url.searchParams.set('limit', 12);
+      if (activePlatform) url.searchParams.set('platform', activePlatform);
+      if (activeTactic) url.searchParams.set('tactic', activeTactic);
 
-      const res = await fetch(
-        `${API_BASE}/mitre/search?q=${encodeURIComponent(q)}&page=${page}&limit=12`
-      );
+      const res = await fetch(url.toString());
       const data = await res.json();
       if (data.success) {
         setAttacks(data.data);
