@@ -66,7 +66,7 @@ export default function MitreTab() {
 
   useEffect(() => {
     loadAttacks();
-  }, [searchQuery, activePlatform, activeTactic, page]);
+  }, [loadAttacks]);
 
   // Submit search form and refresh results from page 1.
   const handleSearchSubmit = (e) => {

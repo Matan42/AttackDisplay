@@ -1,7 +1,7 @@
 // Shared API and UI constants used by the frontend.
-export const API_BASE = 'http://localhost:5000/api';
+export const API_BASE = 'http://localhost:5004/api';
 
-export const CHART_COLORS = [ 
+export const CHART_COLORS = [
   '#00f0ff',
   '#bd00ff',
   '#39ff14',

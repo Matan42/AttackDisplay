@@ -1,14 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import MitreTab from './MitreTab';
+import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 // Mount the app into the root DOM node.
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <MitreTab />
+    <App />
   </React.StrictMode>
 );
 

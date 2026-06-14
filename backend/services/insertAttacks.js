@@ -1,36 +1,9 @@
 import axios from 'axios';
-import { getDatabaseConnection } from '../db/attacks.js';
+import { getDatabaseConnection, dbRun, dbGet, dbAll } from '../db/attacks.js';
+import { searchAttacks as searchAttacksFn, getAttackDetails as getAttackDetailsFn, getMitreStats as getMitreStatsFn } from './attackService.js';
 
 //Attacks to put in the db
 const MITRE_STIX_URL = 'https://raw.githubusercontent.com/mitre/cti/master/enterprise-attack/enterprise-attack.json';
-
-// Helper to run query in promise
-function dbRun(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) reject(err);
-      else resolve(this);
-    });
-  });
-}
-
-function dbAll(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
-}
-
-function dbGet(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
-}
 
 /**
  * Downloads and parses the attacks from the github repo
@@ -68,8 +41,8 @@ export async function downloadAndSyncMitreData() {
         //if it is save it's id, otherwise save NA
         const mitreId = mitreRef ? mitreRef.external_id : 'NA';
         //if platforms or phases are empty or not an array, save NA, otherwise save the array as JSON string
-        const platforms = Array.isArray(obj.x_mitre_platforms) && obj.x_mitre_platforms.length > 0 
-          ? JSON.stringify(obj.x_mitre_platforms) 
+        const platforms = Array.isArray(obj.x_mitre_platforms) && obj.x_mitre_platforms.length > 0
+          ? JSON.stringify(obj.x_mitre_platforms)
           : JSON.stringify(['NA']);
         //if kill_chain_phases is empty or not an array, save NA, otherwise save the array of phase names as JSON string
         const phases = Array.isArray(obj.kill_chain_phases) && obj.kill_chain_phases.length > 0
@@ -77,7 +50,7 @@ export async function downloadAndSyncMitreData() {
           : JSON.stringify(['NA']);
 
          //Push to attackPatterns array for bulk insertion later
-         //Will insert relationships in a separate loop after this one to ensure all techniques are inserted first
+        //Will insert relationships in a separate loop after this one to ensure all techniques are inserted first
         attackPatterns.push({
           id: mitreId,
           stix_id: obj.id,
@@ -164,194 +137,22 @@ export async function downloadAndSyncMitreData() {
  * Searches the database for attacks by keyword, ID, tactic phase or platform
  */
 export async function searchAttacks(queryStr = '', platform = '', tactic = '', page = 1, limit = 50) {
-  const db = getDatabaseConnection();
-  const offset = (page - 1) * limit;
-
-  const normalizedQuery = typeof queryStr === 'string' ? queryStr.trim() : String(queryStr || '').trim();
-  const normalizedPlatform = typeof platform === 'string' ? platform.trim() : String(platform || '').trim();
-  const normalizedTactic = typeof tactic === 'string' ? tactic.trim() : String(tactic || '').trim();
-
-  try {
-    let sql = 'SELECT * FROM attacks';
-    const params = [];
-    const conditions = [];
-
-    if (normalizedQuery !== '') {
-      const searchWildcard = `%${normalizedQuery}%`;
-      conditions.push('(name LIKE ? OR description LIKE ? OR id LIKE ? OR platforms LIKE ? OR phase_name LIKE ?)');
-      params.push(searchWildcard, searchWildcard, searchWildcard, searchWildcard, searchWildcard);
-    }
-
-    if (normalizedPlatform !== '') {
-      conditions.push('platforms LIKE ?');
-      params.push(`%${normalizedPlatform}%`);
-    }
-
-    if (normalizedTactic !== '') {
-      conditions.push('phase_name LIKE ?');
-      params.push(`%${normalizedTactic}%`);
-    }
-
-    if (conditions.length > 0) {
-      sql += ` WHERE ${conditions.join(' AND ')}`;
-    }
-
-    // Get count for pagination
-    const countSql = `SELECT COUNT(*) as count FROM (${sql})`;
-    const totalRow = await dbGet(db, countSql, params);
-    const total = totalRow ? totalRow.count : 0;
-
-    sql += ' ORDER BY id ASC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
-
-    const rows = await dbAll(db, sql, params);
-
-    // Parse platform and phase JSON strings back to arrays
-    const formattedRows = rows.map(row => ({
-      ...row,
-      platforms: JSON.parse(row.platforms || '[]'),
-      phase_name: JSON.parse(row.phase_name || '[]')
-    }));
-
-    return {
-      success: true,
-      data: formattedRows,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
-  } catch (error) {
-    console.error('Error searching attacks:', error.message);
-    throw error;
-  } finally {
-    db.close();
-  }
+  return await searchAttacksFn(queryStr, platform, tactic, page, limit);
 }
 
 /**
  * Retrieves a single attack pattern by its MITRE ID or STIX ID,
  * and fetches all its relationships
- * Function gets: id (attack id or stix id) 
+ * Function gets: id (attack id or stix id)
  * Function returns: attack details along with it's relationships (subtechniques if it's a parent, or parent technique if it's a subtechnique)
  */
 export async function getAttackDetails(id) {
-  const db = getDatabaseConnection();
-
-  try {
-    //Get the attack details
-    const attack = await dbGet(db, 'SELECT * FROM attacks WHERE id = ? OR stix_id = ?', [id, id]);
-    if (!attack) {
-      return { success: false, message: `Attack technique '${id}' not found.` };
-    }
-
-    // Parse columns
-    attack.platforms = JSON.parse(attack.platforms || '[]');
-    attack.phase_name = JSON.parse(attack.phase_name || '[]');
-
-    // Fetch relationships
-    let subtechniques = [];
-    let parentTechnique = null;
-
-    if (attack.is_subtechnique === 0) {
-      //Find all subtechniques where this technique is the parent
-      const subtechRows = await dbAll(db, `
-        SELECT a.* FROM attacks a
-        JOIN relationships r ON a.stix_id = r.source_ref
-        WHERE r.target_ref = ? AND r.relationship_type = 'subtechnique-of'
-      `, [attack.stix_id]);
-
-      subtechniques = subtechRows.map(row => ({
-        ...row,
-        platforms: JSON.parse(row.platforms || '[]'),
-        phase_name: JSON.parse(row.phase_name || '[]')
-      }));
-    } else {
-      //Find parent technique where this technique is the child
-      const parentRow = await dbGet(db, `
-        SELECT a.* FROM attacks a
-        JOIN relationships r ON a.stix_id = r.target_ref
-        WHERE r.source_ref = ? AND r.relationship_type = 'subtechnique-of'
-      `, [attack.stix_id]);
-
-      if (parentRow) {
-        parentTechnique = {
-          ...parentRow,
-          platforms: JSON.parse(parentRow.platforms || '[]'),
-          phase_name: JSON.parse(parentRow.phase_name || '[]')
-        };
-      }
-    }
-
-    return {
-      success: true,
-      data: {
-        ...attack,
-        relationships: {
-          subtechniques,
-          parentTechnique
-        }
-      }
-    };
-  } catch (error) {
-    console.error(`Error getting details for attack ${id}:`, error.message);
-    throw error;
-  } finally {
-    db.close();
-  }
+  return await getAttackDetailsFn(id);
 }
 
-
-//Returns broad statistics from the database for the portal UI dashboard.
+/**
+ * Returns broad statistics from the database for the portal UI dashboard.
+ */
 export async function getMitreStats() {
-  const db = getDatabaseConnection();
-
-  try {
-    const totalRow = await dbGet(db, 'SELECT COUNT(*) as total FROM attacks');
-    const subtechRow = await dbGet(db, 'SELECT COUNT(*) as total FROM attacks WHERE is_subtechnique = 1');
-    const techRow = await dbGet(db, 'SELECT COUNT(*) as total FROM attacks WHERE is_subtechnique = 0');
-    
-    //Group by tactics(phase)
-    const allPhases = await dbAll(db, 'SELECT phase_name FROM attacks');
-    const phaseCounts = {};
-    const platformCounts = {};
-
-    allPhases.forEach(row => {
-      try {
-        const phases = JSON.parse(row.phase_name || '[]');
-        phases.forEach(p => {
-          if (p !== 'NA') phaseCounts[p] = (phaseCounts[p] || 0) + 1;
-        });
-      } catch (e) {}
-    });
-
-    const allPlatforms = await dbAll(db, 'SELECT platforms FROM attacks');
-    allPlatforms.forEach(row => {
-      try {
-        const plats = JSON.parse(row.platforms || '[]');
-        plats.forEach(p => {
-          if (p !== 'NA') platformCounts[p] = (platformCounts[p] || 0) + 1;
-        });
-      } catch (e) {}
-    });
-
-    return {
-      success: true,
-      stats: {
-        totalTechniques: totalRow ? totalRow.total : 0,
-        parentTechniques: techRow ? techRow.total : 0,
-        subtechniques: subtechRow ? subtechRow.total : 0,
-        tacticsCount: Object.keys(phaseCounts).length,
-        tacticBreakdown: phaseCounts,
-        platformBreakdown: platformCounts
-      }
-    };
-  } catch (error) {
-    console.error('Error generating database statistics:', error.message);
-    throw error;
-  } finally {
-    db.close();
-  }
+  return await getMitreStatsFn();
 }
