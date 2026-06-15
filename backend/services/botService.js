@@ -1,6 +1,7 @@
 import { checkFileHash } from './virusTotalService.js';
 import { submitFile, getTaskStatus, getTaskReport, listRecentTasks, updateTaskResults } from './sandboxService.js';
-import { searchAttacks, getAttackDetails } from './attackService.js';
+import { searchAttacks, getAttackDetails, getMitreStats } from './attackService.js';
+import { getDatabaseConnection } from '../db/attacks.js';
 
 /**
  * Process incoming bot message and return appropriate response
@@ -22,11 +23,20 @@ export async function processBotMessage(message) {
       if (vtResult.notFound) {
         return { response: `Info: The signature ${fileHash} was not found in the VirusTotal repository.` };
       }
-      if (vtResult.detected) {
-        return { response: `Threat Alert: The signature ${fileHash} is flagged as malicious in VirusTotal. Identified by ${vtResult.maliciousCount} out of ${vtResult.totalEngines} antivirus engines.` };
-      } else {
-        return { response: `Clear: The signature ${fileHash} is clean according to VirusTotal database with 0 malicious detections.` };
-      }
+      // Show detailed stats in simple format without curly braces
+      const stats = vtResult.stats || {};
+      let response = '';
+      if (stats.malicious !== undefined) response += `malicious: ${stats.malicious}\n`;
+      if (stats.suspicious !== undefined) response += `suspicious: ${stats.suspicious}\n`;
+      if (stats.undetected !== undefined) response += `undetected: ${stats.undetected}\n`;
+      if (stats.harmless !== undefined) response += `harmless: ${stats.harmless}\n`;
+      if (stats.timeout !== undefined) response += `timeout: ${stats.timeout}\n`;
+      if (stats['confirmed-timeout'] !== undefined) response += `confirmed-timeout: ${stats['confirmed-timeout']}\n`;
+      if (stats.failure !== undefined) response += `failure: ${stats.failure}\n`;
+      if (stats['type-unsupported'] !== undefined) response += `type-unsupported: ${stats['type-unsupported']}`;
+
+      // Remove trailing newline if present
+      return { response: response.trim() };
     }
 
     // Command Type 2: Local Database Query for MITRE ATT&CK Techniques
@@ -150,15 +160,40 @@ ${Object.entries(stats.platformBreakdown)
 
     // Command Type 8: Get Random Technique (for fun)
     if (cleanMsg.includes('random technique') || cleanMsg.includes('rand tech')) {
-      // We'll fetch a random attack by getting a random ID from DB
-      const db = await getDatabaseConnection(); // Note: we need to import getDatabaseConnection, but we can reuse searchAttacks with empty query?
-      // For simplicity, we'll just search for empty and pick first? Not ideal.
-      // Let's implement a simple random by getting count and offset.
-      // We'll do a quick query.
-      // Since we don't have a direct function, we'll create a temporary one.
-      // But to avoid complexity, we'll just search for a common term like "execution" and pick first.
-      // For now, we'll skip this command.
-      return { response: 'CyberBot: Random technique feature coming soon.' };
+      const db = getDatabaseConnection();
+      try {
+        // Get total count of techniques
+        const countRow = await dbGet(db, 'SELECT COUNT(*) as total FROM attacks');
+        const total = countRow ? countRow.total : 0;
+
+        if (total === 0) {
+          return { response: 'No techniques found in the database.' };
+        }
+
+        // Get a random offset
+        const randomOffset = Math.floor(Math.random() * total);
+
+        // Fetch one technique at the random offset
+        const randomTechnique = await dbGet(db, `
+          SELECT * FROM attacks
+          ORDER BY id
+          LIMIT 1 OFFSET ?
+        `, [randomOffset]);
+
+        if (!randomTechnique) {
+          return { response: 'Failed to fetch a random technique.' };
+        }
+
+        // Parse JSON fields
+        const platforms = randomTechnique.platforms ? JSON.parse(randomTechnique.platforms) : [];
+        const phaseName = randomTechnique.phase_name ? JSON.parse(randomTechnique.phase_name) : [];
+
+        return {
+          response: `Random Technique:\nID: ${randomTechnique.id}\nName: ${randomTechnique.name}\nTactic: ${phaseName.join(', ') || 'N/A'}\nPlatforms: ${platforms.join(', ') || 'N/A'}\nDescription: ${(randomTechnique.description || 'No description available').substring(0, 200)}${randomTechnique.description && randomTechnique.description.length > 200 ? '...' : ''}`
+        };
+      } finally {
+        db.close();
+      }
     }
 
     // Fallback response outlining available operational instructions

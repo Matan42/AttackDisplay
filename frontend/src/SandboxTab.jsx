@@ -286,26 +286,26 @@ export default function SandboxTab() {
                   // VT Check Report
                   <>
                     <div className="sandbox-report-section">
-                      <h3>File Information</h3>
+                      <h3>file information</h3>
                       <p><strong>Size:</strong> {selectedTask.filesize} bytes</p>
                       <p><strong>MD5:</strong> {selectedTask.md5}</p>
                       <p><strong>SHA256:</strong> {selectedTask.sha256}</p>
                     </div>
 
                     <div className="sandbox-report-section">
-                      <h3>VirusTotal Result</h3>
+                      <h3>virustotal result</h3>
                       <p>
                         {selectedTask.vtResult.detected ? (
-                          <span style={{ color: 'var(--text-error)' }}>MALICIOUS</span>
+                          <span style={{ color: 'var(--text-error)' }}>malicious</span>
                         ) : (
-                          <span style={{ color: 'var(--text-success)' }}>CLEAN</span>
+                          <span style={{ color: 'var(--text-success)' }}>clean</span>
                         )}
-                        ({selectedTask.vtResult.maliciousCount} of {selectedTask.vtResult.totalEngines} engines detected)
+                        ({selectedTask.vtResult.maliciouscount} of {selectedTask.vtResult.totalengines} engines detected)
                       </p>
                     </div>
 
                     <div className="sandbox-report-section">
-                      <h3>Engine Details</h3>
+                      <h3>engine details</h3>
                       <pre className="sandbox-engine-details">
 {JSON.stringify(selectedTask.vtResult.stats, null, 2)}
                       </pre>
@@ -313,57 +313,57 @@ export default function SandboxTab() {
 
                     {/* Tags - we can show the summary as a tag */}
                     <div className="sandbox-report-section">
-                      <h3>Tags</h3>
+                      <h3>tags</h3>
                       <span className="sandbox-tag">
-                        VT Result: {selectedTask.vtResult.detected ? 'Malicious' : 'Clean'} ({selectedTask.vtResult.maliciousCount}/{selectedTask.vtResult.totalEngines} engines)
+                        vt result: {selectedTask.vtResult.detected ? 'malicious' : 'clean'} ({selectedTask.vtResult.maliciouscount}/{selectedTask.vtResult.totalengines} engines)
                       </span>
                     </div>
 
-                    {/* MITRE Techniques Detected */}
+                    {/* mitre techniques detected */}
                     <div className="sandbox-report-section">
-                      <h3>MITRE Techniques Detected</h3>
+                      <h3>mitre techniques detected</h3>
                       {selectedTask && selectedTask.vtResult && selectedTask.vtResult.mitre_techniques && selectedTask.vtResult.mitre_techniques.length > 0
                         ? selectedTask.vtResult.mitre_techniques.map(tech => (
                             <span key={tech} className="sandbox-technique">
                               {tech}
                             </span>
                           ))
-                        : <span>No MITRE techniques detected.</span>}
+                        : <span>no mitre techniques detected.</span>}
                     </div>
 
-                    {/* Behavior Log (Sample) */}
+                    {/* behavior log (sample) */}
                     <div className="sandbox-report-section">
-                      <h3>Behavior Log (Sample)</h3>
+                      <h3>behavior log (sample)</h3>
                       <pre className="sandbox-behavior-log">
 {selectedTask.vtResult.behavior_log || 'No behavior log available.'}
                       </pre>
                     </div>
 
-                    {/* Network Activity (Sample) */}
+                    {/* network activity (sample) */}
                     <div className="sandbox-report-section">
-                      <h3>Network Activity (Sample)</h3>
+                      <h3>network activity (sample)</h3>
                       <pre className="sandbox-network-activity">
 {selectedTask.vtResult.network_activity || 'No network activity data.'}
                       </pre>
                     </div>
                   </>
                 ) : (
-                  // Sandbox Report (original)
+                  // sandbox report (original)
                   <>
                     <div className="sandbox-report-section">
-                      <h3>File Information</h3>
+                      <h3>file information</h3>
                       <p><strong>Size:</strong> {selectedTask.filesize || 'N/A'} bytes</p>
                       <p><strong>MD5:</strong> {selectedTask.md5 || 'N/A'}</p>
                       <p><strong>SHA256:</strong> {selectedTask.sha256 || 'N/A'}</p>
                     </div>
 
                     <div className="sandbox-report-section">
-                      <h3>Analysis Summary</h3>
+                      <h3>analysis summary</h3>
                       <p>{selectedTask.summary || 'No summary available.'}</p>
                     </div>
 
                     <div className="sandbox-report-section">
-                      <h3>Tags</h3>
+                      <h3>tags</h3>
                       {getTagsArray(selectedTask.tags).map((tag, index) => (
                         <span key={index} className="sandbox-tag">
                           {tag}
@@ -372,7 +372,7 @@ export default function SandboxTab() {
                     </div>
 
                     <div className="sandbox-report-section">
-                      <h3>MITRE Techniques Detected</h3>
+                      <h3>mitre techniques detected</h3>
                       {selectedTask && selectedTask.mitre_techniques ? (
                         (() => {
                           try {
@@ -381,26 +381,26 @@ export default function SandboxTab() {
                               <span key={index} className="sandbox-technique">
                                 {tech}
                               </span>
-                            )) : <span>No MITRE techniques detected.</span>;
+                            )) : <span>no mitre techniques detected.</span>;
                           } catch (e) {
-                            console.warn('Failed to parse mitre_techniques as JSON:', selectedTask.mitre_techniques);
-                            return <span>No MITRE techniques detected.</span>;
+                            console.warn('failed to parse mitre_techniques as json:', selectedTask.mitre_techniques);
+                            return <span>no mitre techniques detected.</span>;
                           }
                         })()
                       ) : (
-                        <span>No MITRE techniques detected.</span>
+                        <span>no mitre techniques detected.</span>
                       )}
                     </div>
 
                     <div className="sandbox-report-section">
-                      <h3>Behavior Log (Sample)</h3>
+                      <h3>behavior log (sample)</h3>
                       <pre className="sandbox-behavior-log">
 {selectedTask.behavior_log || 'No behavior log available.'}
                       </pre>
                     </div>
 
                     <div className="sandbox-report-section">
-                      <h3>Network Activity (Sample)</h3>
+                      <h3>network activity (sample)</h3>
                       <pre className="sandbox-network-activity">
 {selectedTask.network_activity || 'No network activity data.'}
                       </pre>

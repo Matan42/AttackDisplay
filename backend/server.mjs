@@ -81,7 +81,13 @@ app.get('/api/mitre/search', async (req, res) => {
   }
 
   try {
-    const result = await searchAttacks(query, platform, tactic, page, limit);
+    const result = await searchAttacks({
+      queryStr: query,
+      platform: platform,
+      tactic: tactic,
+      page: page,
+      limit: limit
+    });
     res.json(result);
   } catch (error) {
     console.error('Search operational failure:', error);
